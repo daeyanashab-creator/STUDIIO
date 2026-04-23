@@ -1687,10 +1687,7 @@ async function saveToSupabase(table, data) {
   try {
     const payload = { ...data, user_id: currentUser.id };
     Object.keys(payload).forEach(k => payload[k] === undefined && delete payload[k]);
-    // Timeout 10s — jika pending terus berarti lock issue
-    const timeoutP = new Promise((_,rej) => setTimeout(() => rej(new Error('timeout 10s')), 10000));
-    const supaP = supa.from(table).upsert(payload, { onConflict: 'id' });
-    const { error } = await Promise.race([supaP, timeoutP]);
+    const { error } = await supa.from(table).upsert(payload, { onConflict: 'id' });
     if (error) {
       console.error('[Supabase] Save error', table, error.code, error.message, payload);
       toast('Gagal sync: ' + error.message, 'er');
